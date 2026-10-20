@@ -166,6 +166,32 @@ class Score:
         screen.blit(self.img, self.rct)
 
 
+class Explosion:
+    """
+    爆弾を打ち落とした時の爆発エフェクトに関するクラス
+    """
+    def __init__(self, bomb: "Bomb"):
+        """
+        爆発画像Surfaceのリストを生成する
+        引数 bomb：爆発した爆弾（Bombインスタンス）
+        """
+        img = pg.image.load("fig/explosion.gif")
+        self.imgs = [img, pg.transform.flip(img, True, True)]
+        self.img = self.imgs[0]
+        self.rct = self.img.get_rect()
+        self.rct.center = bomb.rct.center
+        self.life = 50  # 爆発の表示時間（フレーム数）
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発経過時間を減算し，画像を切り替えながら画面に転送する
+        引数 screen：画面Surface
+        """
+        self.life -= 1
+        self.img = self.imgs[self.life // 10 % 2]  # 10フレームごとに切り替え，チラつきを抑える
+        screen.blit(self.img, self.rct)
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -174,6 +200,7 @@ def main():
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beams = []  # ゲーム初期化時にはビームは存在しない
     score = Score()
+    exps = []  # 爆発エフェクトのリスト
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -205,6 +232,7 @@ def main():
                     beams[i] = None
                     bombs[j] = None
                     score.value += 1  # 1点アップ
+                    exps.append(Explosion(bomb))  # 爆発エフェクト
                     bird.change_img(6, screen)  # こうかとん喜びエフェクト
                     pg.display.update()
                     break
@@ -218,6 +246,9 @@ def main():
             beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
+        exps = [exp for exp in exps if exp.life > 0]
+        for exp in exps:
+            exp.update(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
