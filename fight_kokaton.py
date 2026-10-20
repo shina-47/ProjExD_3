@@ -173,6 +173,8 @@ def main():
                     # ビームと爆弾が衝突したら，両方を消滅させる
                     beam = None
                     bomb = None
+                    bird.change_img(6, screen)  # こうかとん喜びエフェクト
+                    pg.display.update()
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
